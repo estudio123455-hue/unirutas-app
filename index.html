@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniRutas | Sistema Universal de Movilidad Segura</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+    <div id="emergency-toast" class="emergency-toast hidden">
+        <div class="toast-content">
+            <span class="pulse-icon">🚨</span>
+            <div>
+                <strong id="toast-user">Usuario</strong> reporta una emergencia en tu ruta.
+            </div>
+        </div>
+    </div>
+
+    <div id="login-view" class="view container">
+        <div class="auth-card">
+            <header class="auth-header">
+                <h1>Uni<span>Rutas</span></h1>
+                <p id="auth-subtitle">Ingresa a la red de movilidad segura.</p>
+            </header>
+            
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="email">Correo Electrónico</label>
+                    <input type="email" id="email" placeholder="tu@correo.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Ingresar Seguro</button>
+                <p class="auth-switch">¿No tienes cuenta? <a href="#" id="go-to-register">Regístrate aquí</a></p>
+            </form>
+
+            <form id="register-form" class="hidden">
+                <div class="input-group">
+                    <label for="reg-name">Nombre Completo</label>
+                    <input type="text" id="reg-name" placeholder="Ej: Emilio Bottagisio" required>
+                </div>
+                <div class="input-group">
+                    <label for="reg-email">Correo Electrónico</label>
+                    <input type="email" id="reg-email" placeholder="tu@correo.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="reg-password">Contraseña (Min. 6 caracteres)</label>
+                    <input type="password" id="reg-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-accent" style="width:100%">Crear Mi Cuenta</button>
+                <p class="auth-switch">¿Ya tienes cuenta? <a href="#" id="go-to-login">Inicia Sesión</a></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="dashboard-view" class="view container hidden">
+        <header class="app-header">
+            <div class="logo">Uni<span>Rutas</span></div>
+            <div class="user-meta">
+                <span id="user-display" class="user-email" style="cursor: pointer; transition: var(--transition);" title="Editar perfil"></span>
+                <button id="tactical-mode-btn" class="btn btn-secondary btn-sm" style="background: #000; border-color: #222;">🕶️ Modo Táctico</button>
+                <button id="logout-btn" class="btn btn-secondary btn-sm">Salir</button>
+            </div>
+        </header>
+
+        <main class="app-content">
+            <section id="profile-card" class="card hidden" style="border-left: 4px solid var(--primary); animation: fadeIn 0.3s ease-in-out;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2>⚙️ Configuración de tu Perfil</h2>
+                    <button id="close-profile-btn" class="close-btn" style="font-size: 1.2rem;">&times;</button>
+                </div>
+                <form id="profile-form" class="horizontal-form">
+                    <div class="input-group">
+                        <label for="profile-name">Tu Nombre Público</label>
+                        <input type="text" id="profile-name" placeholder="Ej: Emilio Bottagisio" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Correo Electrónico (No modificable)</label>
+                        <input type="email" id="profile-email-static" readonly style="opacity: 0.6; cursor: not-allowed;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="height: 50px;">Guardar Cambios</button>
+                </form>
+            </section>
+
+            <section class="card creation-section">
+                <h2>Programar un Pelotón</h2>
+                <form id="route-form" class="horizontal-form">
+                    <div class="input-group">
+                        <label for="origin">Origen / Punto Encuentro</label>
+                        <input type="text" id="origin" placeholder="📍 Toca el mapa para fijar el punto" readonly required>
+                    </div>
+                    
+                    <input type="hidden" id="origin-lat">
+                    <input type="hidden" id="origin-lng">
+
+                    <div class="input-group">
+                        <label for="destination">Destino Final</label>
+                        <input type="text" id="destination" placeholder="Ej: Cedritos / Suba" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="time">Hora de Salida</label>
+                        <input type="time" id="time" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="vehicle">Vehículo</label>
+                        <select id="vehicle" required>
+                            <option value="🚲 Bici">🚲 Bici</option>
+                            <option value="🛴 Scooter">🛴 Scooter</option>
+                            <option value="🏃 A pie">🏃 A pie</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-accent">Lanzar Grupo</button>
+                </form>
+            </section>
+
+            <div class="filters-bar">
+                <input type="text" id="search-destination" placeholder="🔍 Filtrar por destino (Ej: Suba)...">
+                <select id="filter-vehicle">
+                    <option value="todos">⚡ Todos los transportes</option>
+                    <option value="🚲 Bici">🚲 Bici</option>
+                    <option value="🛴 Scooter">🛴 Scooter</option>
+                    <option value="🏃 A pie">🏃 A pie</option>
+                </select>
+            </div>
+
+            <section class="card map-section">
+                <h2>Visor de Rutas en Vivo</h2>
+                <div id="global-map" style="height: 350px; border-radius: 12px; border: 1px solid var(--glass-border); background: #0b132b;"></div>
+            </section>
+
+            <div class="report-bar card" style="margin-top: 16px; padding: 16px;">
+                <h3 style="font-size: 1rem; margin-bottom: 12px;">Reportar Evento en la Vía (Waze Style)</h3>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-secondary btn-sm report-btn" data-type="🚧 Hueco">🚧 Hueco Crítico</button>
+                    <button class="btn btn-secondary btn-sm report-btn" data-type="🌧️ Charco">🌧️ Inundación</button>
+                    <button class="btn btn-secondary btn-sm report-btn" data-type="🚨 Peligro">🚨 Actividad Sospechosa</button>
+                </div>
+            </div>
+
+            <section class="routes-section">
+                <h2>Pelotones Activos en la Red</h2>
+                <div id="routes-container" class="routes-grid">
+                    <div class="loading">Sincronizando con la red global...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="chat-modal" class="chat-modal hidden">
+        <div class="chat-container">
+            <header class="chat-header">
+                <div>
+                    <h3 id="chat-route-title">Chat de Pelotón</h3>
+                    <p id="chat-route-meta">Grupo de viaje en vivo</p>
+                </div>
+                <div class="header-actions">
+                    <button id="sos-btn" class="btn-sos">🚨 SOS</button>
+                    <button id="close-chat-btn" class="close-btn">&times;</button>
+                </div>
+            </header>
+            <div id="chat-messages" class="chat-messages"></div>
+            <form id="chat-form" class="chat-form">
+                <input type="text" id="chat-input" placeholder="Escribe un mensaje al grupo..." required autocomplete="off">
+                <button type="submit" class="btn-send">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

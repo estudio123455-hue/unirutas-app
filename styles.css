@@ -1,0 +1,624 @@
+/* ==========================================================================
+   VARIABLES DE DISEÑO PREMIUM (DARK CORE)
+   ========================================================================== */
+:root {
+    --bg-main: #060913;
+    --bg-card: rgba(15, 23, 42, 0.65);
+    --bg-input: rgba(30, 41, 59, 0.7);
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+    
+    /* Acentos de Color */
+    --primary: #3B82F6;
+    --primary-hover: #2563EB;
+    --accent: #10B981;
+    --accent-hover: #059669;
+    --danger: #EF4444;
+    --warning: #F59E0B;
+    
+    /* Efectos Especiales */
+    --glass-border: rgba(255, 255, 255, 0.05);
+    --glass-glow: rgba(59, 130, 246, 0.1);
+    --border-radius: 16px;
+    --blur-effect: blur(12px);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   RESETS & ESTILOS GLOBALES
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(16, 115, 129, 0.05) 0%, transparent 40%);
+    color: var(--text-main);
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.view {
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.hidden { display: none !important; }
+
+/* ==========================================================================
+   VISTA DE AUTENTICACIÓN (LOGIN/REGISTRO)
+   ========================================================================== */
+#login-view {
+    min-height: 100vh;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+}
+
+.auth-card {
+    background: var(--bg-card);
+    backdrop-filter: var(--blur-effect);
+    -webkit-backdrop-filter: var(--blur-effect);
+    border: 1px solid var(--glass-border);
+    padding: 40px 32px;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 80px rgba(59, 130, 246, 0.03);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.auth-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+}
+
+.auth-header h1 span {
+    color: var(--primary);
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.auth-header p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* ==========================================================================
+   ESTILOS DE FORMULARIOS E INPUTS
+   ========================================================================== */
+.input-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+input, select {
+    background: var(--bg-input);
+    border: 1px solid var(--glass-border);
+    padding: 14px 16px;
+    border-radius: 12px;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: var(--transition);
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(30, 41, 59, 0.9);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+
+input::placeholder {
+    color: rgba(148, 163, 184, 0.4);
+}
+
+/* ==========================================================================
+   BOTONES PREMIUM
+   ========================================================================== */
+.btn {
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #FFFFFF;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+}
+
+.btn-accent {
+    background: var(--accent);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.btn-accent:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+}
+
+/* ==========================================================================
+   DASHBOARD / CABECERA DE LA APP
+   ========================================================================== */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--glass-border);
+    margin-bottom: 32px;
+}
+
+.app-header .logo {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.app-header .logo span { color: var(--primary); }
+
+.user-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.user-email {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+}
+
+/* ==========================================================================
+   CONTENEDOR DE CREACIÓN DE RUTAS (RESPONSIVO MÁXIMO)
+   ========================================================================== */
+.card {
+    background: var(--bg-card);
+    backdrop-filter: var(--blur-effect);
+    -webkit-backdrop-filter: var(--blur-effect);
+    border: 1px solid var(--glass-border);
+    padding: 28px;
+    border-radius: var(--border-radius);
+    margin-bottom: 32px;
+}
+
+.card h2, .routes-section h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    letter-spacing: -0.3px;
+}
+
+/* Formulario adaptable: PC usa grid horizontal, móviles fila vertical */
+.horizontal-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    align-items: flex-end;
+}
+
+/* Hace que el botón ocupe toda su columna designada en pantallas grandes */
+.horizontal-form .btn {
+    height: 50px;
+    width: 100%;
+}
+
+/* ==========================================================================
+   BARRA DE FILTROS AVANZADA
+   ========================================================================== */
+.filters-bar {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+    background: rgba(15, 23, 42, 0.4);
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid var(--glass-border);
+}
+
+/* ==========================================================================
+   GRID DE TARJETAS DE RUTA (AUTOMÁTICO PC / TABLET / MOBILE)
+   ========================================================================== */
+.routes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+}
+
+.route-card {
+    background: var(--bg-card);
+    backdrop-filter: var(--blur-effect);
+    -webkit-backdrop-filter: var(--blur-effect);
+    border: 1px solid var(--glass-border);
+    border-left: 4px solid var(--primary);
+    padding: 24px;
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
+    transition: var(--transition);
+}
+
+.route-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(59, 130, 246, 0.2);
+    border-left-color: var(--primary);
+    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.6);
+}
+
+/* Estado dinámico: En Marcha cambia a color de advertencia */
+.route-card.en-marcha {
+    border-left-color: var(--warning);
+}
+
+.route-info h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+}
+
+.route-info p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+}
+
+.vehicle-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    padding: 4px 10px;
+    border-radius: 6px;
+    color: #E2E8F0;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Acciones inferiores de la tarjeta */
+.route-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    padding-top: 16px;
+}
+
+/* ==========================================================================
+   BADGES & LABELS DE ESTADO
+   ========================================================================== */
+.badge {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #CBD5E1;
+}
+
+.badge-status {
+    font-weight: 700;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-left: 8px;
+}
+
+.status-programado { background: rgba(59, 130, 246, 0.1); color: #60A5FA; }
+.status-marcha { background: rgba(245, 158, 11, 0.1); color: #FBBF24; animation: pulseBlink 2s infinite; }
+
+/* ==========================================================================
+   CHAT MODAL FLOTANTE PREMIUM
+   ========================================================================== */
+.chat-modal {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 380px;
+    height: 520px;
+    z-index: 1000;
+    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.chat-container {
+    background: #0B132B;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+}
+
+.chat-header {
+    background: rgba(30, 41, 59, 0.5);
+    backdrop-filter: var(--blur-effect);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.chat-header h3 { font-size: 0.95rem; font-weight: 700; }
+.chat-header p { font-size: 0.75rem; color: var(--text-muted); }
+
+.header-actions { display: flex; align-items: center; gap: 10px; }
+
+.btn-sos {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 0.75rem;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+    animation: flashSOS 1.5s infinite;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background-image: radial-gradient(rgba(255,255,255,0.01) 1px, transparent 0);
+    background-size: 16px 16px;
+}
+
+/* BURBUJAS DE CONVERSACIÓN */
+.message {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.message .meta {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+    font-weight: 600;
+}
+
+.message.incoming {
+    background: #1E293B;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+    border: 1px solid rgba(255,255,255,0.02);
+}
+
+.message.outgoing {
+    background: var(--primary);
+    color: #FFFFFF;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+.message.outgoing .meta { color: rgba(255, 255, 255, 0.65); }
+
+/* Formulario inferior de escritura */
+.chat-form {
+    padding: 12px 16px;
+    background: rgba(15, 23, 42, 0.8);
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid var(--glass-border);
+}
+
+.chat-form input { flex: 1; padding: 10px 14px; border-radius: 10px; }
+
+.btn-send {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* ==========================================
+   ALERTA DE EMERGENCIA EMERGENCIAL (TOAST)
+   ========================================== */
+.emergency-toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(220, 38, 38, 0.9);
+    backdrop-filter: var(--blur-effect);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 16px 28px;
+    border-radius: 16px;
+    z-index: 2000;
+    box-shadow: 0 15px 30px rgba(220, 38, 38, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    animation: slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* ==========================================
+   ANIMACIONES ESTRUCTURALES
+   ========================================== */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideDown { from { top: -80px; opacity: 0; transform: translateX(-50%); } to { top: 24px; opacity: 1; transform: translateX(-50%); } }
+@keyframes pulseBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+@keyframes flashSOS { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); } 70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+/* ==========================================================================
+   MEDIA QUERIES (ADAPTABILIDAD TOTAL / RESPONSIVE)
+   ========================================================================== */
+
+/* TABLETS Y PC MEDIANOS */
+@media (max-width: 900px) {
+    .container { padding: 16px; }
+    .horizontal-form { grid-template-columns: 1fr 1fr; }
+    .horizontal-form .btn { grid-column: span 2; }
+}
+
+/* TELÉFONOS MÓVILES (MOBILE-FIRST BREAKPOINT) */
+@media (max-width: 600px) {
+    .horizontal-form { grid-template-columns: 1fr; }
+    .horizontal-form .btn { grid-column: span 1; }
+    
+    .filters-bar { grid-template-columns: 1fr; gap: 10px; }
+    .routes-grid { grid-template-columns: 1fr; }
+    
+    .app-header { flex-direction: column; gap: 14px; align-items: flex-start; }
+    .user-meta { width: 100%; justify-content: space-between; }
+    
+    /* El chat se expande a pantalla completa en celulares para que sea cómodo escribir */
+    .chat-modal {
+        bottom: 0;
+        right: 0;
+        width: 100vw;
+        height: 100vh;
+    }
+    .chat-container { border-radius: 0; border: none; }
+}
+
+/* --- ENLACES Y SWITCH DE AUTENTICACIÓN --- */
+.auth-switch {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+}
+
+.auth-switch a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+/* MODO TÁCTICO: Negro Puro para ahorro de batería en calle */
+body.tactical-mode {
+    --bg-main: #000000;
+    --bg-card: #050505;
+    --bg-input: #101010;
+    --glass-border: rgba(255, 255, 255, 0.02);
+}
+
+/* PELOTÓN DE ORO: Tarjeta masiva animada */
+.route-card.gold-squad {
+    border-left-color: #FBBF24 !important;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.65) 0%, rgba(245, 158, 11, 0.05) 100%);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.1);
+    animation: goldGlow 3s infinite alternate;
+}
+
+@keyframes goldGlow {
+    from { box-shadow: 0 0 15px rgba(245, 158, 11, 0.05); }
+    to { box-shadow: 0 0 25px rgba(245, 158, 11, 0.15); }
+}
+
+/* Feedback visual para el botón de perfil */
+#user-display:hover {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: var(--primary);
+    color: #FFFFFF;
+}
