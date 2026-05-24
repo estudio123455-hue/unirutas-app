@@ -410,7 +410,8 @@ onAuthStateChanged(auth, (user) => {
             desuscribirSos = escucharAlertasSOS();
         }
         
-        activarEscuchaEmergenciasGlobal();
+        // Comentamos activarEscuchaEmergenciasGlobal temporalmente para evitar errores de permisos
+        // activarEscuchaEmergenciasGlobal();
     } else {
         currentUser = null;
         
@@ -896,6 +897,8 @@ function activarEscuchaEmergenciasGlobal() {
                 }, 8000);
             }
         });
+    }, (error) => {
+        console.error("Error en escucha de emergencias globales:", error);
     });
 }
 
