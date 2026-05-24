@@ -81,6 +81,18 @@ let idRutaActiva = null;
 let escuchadorCompañeros = null; // Almacena el unsubscribe de Firebase
 let marcadoresCompañeros = {};   // Guarda los pines de tus amigos en el mapa
 
+// El Escudo de UniRutas: Convierte HTML potencialmente peligroso en texto seguro
+function sanitizarEntrada(texto) {
+    if (!texto) return '';
+    return texto
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#x27;")
+        .replace(/\//g, "&#x2F;");
+}
+
 /* ==========================================
    0. INICIALIZACIÓN DEL MAPA GLOBAL
    ========================================== */
@@ -440,10 +452,18 @@ filterVehicle.addEventListener('change', aplicarFiltros);
    ========================================== */
 routeForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const origin = document.getElementById('origin').value.trim();
-    const destination = document.getElementById('destination').value.trim();
+    
+    // FILTRADO DE SEGURIDAD: Sanitizar origen y destino
+    const origin = sanitizarEntrada(document.getElementById('origin').value.trim());
+    const destination = sanitizarEntrada(document.getElementById('destination').value.trim());
     const time = document.getElementById('time').value;
     const vehicle = document.getElementById('vehicle').value;
+    
+    // Validar que no estén vacíos después de sanitización
+    if (!origin || !destination) {
+        alert("Por favor, introduce rutas válidas.");
+        return;
+    }
     
     // Capturar las coordenadas del click en el mapa
     const latSalida = parseFloat(document.getElementById('origin-lat').value);
@@ -459,7 +479,7 @@ routeForm.addEventListener('submit', async (e) => {
             origen: origin,
             destino: destination,
             hora: time,
-            creador: currentUser.displayName || currentUser.email.split('@')[0],
+            creador: sanitizarEntrada(currentUser.displayName || currentUser.email.split('@')[0]),
             creadorId: currentUser.uid,
             creadorVehiculo: vehicle,
             miembros: [currentUser.email],
@@ -637,14 +657,17 @@ function abrirChatDeRuta(idRuta, tituloRuta) {
 chatForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!activeRouteId || !chatInput.value.trim()) return;
-    const txt = chatInput.value.trim();
+    
+    // APLICAMOS LA SEGURIDAD: Sanitizar el mensaje antes de enviarlo
+    const txt = sanitizarEntrada(chatInput.value.trim());
+    
     chatInput.value = '';
 
     try {
         await addDoc(collection(db, "rutas", activeRouteId, "mensajes"), {
             texto: txt,
             remitenteId: currentUser.uid,
-            nombre: currentUser.displayName || currentUser.email.split('@')[0],
+            nombre: sanitizarEntrada(currentUser.displayName || currentUser.email.split('@')[0]),
             timestamp: new Date().toISOString()
         });
     } catch (error) { console.error(error); }
