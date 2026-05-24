@@ -93,6 +93,149 @@ function sanitizarEntrada(texto) {
         .replace(/\//g, "&#x2F;");
 }
 
+// ==========================================
+// SISTEMA DE EMERGENCIA SOS
+// ==========================================
+async function activarAlertaSOS() {
+    // 1. Verificación de Seguridad: Obligatorio estar logueado
+    if (!currentUser) {
+        alert("Error: Debes iniciar sesión en la red para emitir una alerta de auxilio.");
+        return;
+    }
+
+    // Confirmación rápida para evitar falsos positivos táctiles
+    const confirmar = confirm("¿Estás seguro de que deseas enviar una alerta de emergencia SOS a la red?");
+    if (!confirmar) return;
+
+    // 2. Intentar obtener la ubicación real del usuario mediante el GPS del celular
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const latitud = position.coords.latitude;
+            const longitud = position.coords.longitude;
+
+            // 3. Estructura de datos segura para la emergencia
+            const datosEmergencia = {
+                usuarioId: currentUser.uid,
+                usuarioNombre: sanitizarEntrada(currentUser.displayName || "Usuario Anónimo"),
+                usuarioCorreo: currentUser.email,
+                ubicacion: {
+                    lat: latitud,
+                    lng: longitud
+                },
+                estado: "Activo", // Activo / Atendido
+                fechaHora: new Date().toISOString() // Hora exacta del servidor
+            };
+
+            try {
+                // Subir la alerta a la colección de 'emergencias'
+                await addDoc(collection(db, "emergencias"), datosEmergencia);
+                
+                // Efecto visual en la interfaz de UniRutas
+                notificarAlertaEnPantalla();
+            } catch (error) {
+                console.error("Error al enviar el SOS:", error);
+                alert("No se pudo enviar la señal de SOS. Intenta de nuevo o busca un lugar seguro.");
+            }
+
+        }, (error) => {
+            console.error("Error de GPS:", error);
+            alert("No pudimos obtener tu ubicación GPS, pero enviaremos la alerta con tus datos de perfil.");
+            // Envío alternativo sin coordenadas exactas si el GPS falla
+            enviarSOSSinGps();
+        });
+    } else {
+        alert("Tu dispositivo no soporta geolocalización.");
+    }
+}
+
+// Envío alternativo sin GPS
+async function enviarSOSSinGps() {
+    try {
+        const datosEmergencia = {
+            usuarioId: currentUser.uid,
+            usuarioNombre: sanitizarEntrada(currentUser.displayName || "Usuario Anónimo"),
+            usuarioCorreo: currentUser.email,
+            ubicacion: null,
+            estado: "Activo",
+            fechaHora: new Date().toISOString()
+        };
+        
+        await addDoc(collection(db, "emergencias"), datosEmergencia);
+        notificarAlertaEnPantalla();
+    } catch (error) {
+        console.error("Error al enviar SOS sin GPS:", error);
+        alert("No se pudo enviar la señal de SOS. Intenta de nuevo.");
+    }
+}
+
+// Interfaz: Cambiar visualmente la app al modo de emergencia
+function notificarAlertaEnPantalla() {
+    // Buscar el contenedor o banner de notificaciones de tu HTML
+    const bannerSms = document.body; 
+    
+    // Crear un banner rojo parpadeante arriba en la app
+    const avisoEstilo = document.createElement('div');
+    avisoEstilo.style.backgroundColor = '#ff0000';
+    avisoEstilo.style.color = '#ffffff';
+    avisoEstilo.style.textAlign = 'center';
+    avisoEstilo.style.padding = '15px';
+    avisoEstilo.style.fontWeight = 'bold';
+    avisoEstilo.style.position = 'fixed';
+    avisoEstilo.style.top = '0';
+    avisoEstilo.style.width = '100%';
+    avisoEstilo.style.zIndex = '9999';
+    avisoEstilo.textContent = "🚨 ALERTA SOS ENVIADA. Mantén la calma, la red está informada.";
+
+    bannerSms.appendChild(avisoEstilo);
+
+    // Remover el aviso después de 7 segundos
+    setTimeout(() => {
+        avisoEstilo.remove();
+    }, 7000);
+}
+
+// ==========================================
+// ESCUCHADOR EN TIEMPO REAL DE ALERTAS SOS
+// ==========================================
+function escucharAlertasSOS() {
+    const coleccionEmergencias = collection(db, "emergencias");
+    
+    // Filtramos para escuchar únicamente las emergencias cuyo estado sea "Activo"
+    const consultaSosActivos = query(coleccionEmergencias, where("estado", "==", "Activo"));
+
+    // El listener en tiempo real se activa inmediatamente cuando hay cambios
+    onSnapshot(consultaSosActivos, (snapshot) => {
+        const contenedorAlertaCabecera = document.getElementById('emergency-toast');
+        
+        if (!snapshot.empty) {
+            // ¡Hay al menos una emergencia activa en la red!
+            console.log("🚨 ¡Alerta SOS detectada en la base de datos!");
+            
+            // Obtenemos los datos de la última alerta para personalizar el mensaje
+            const datosEmergencia = snapshot.docs[0].data();
+            const nombreAfectado = datosEmergencia.usuarioNombre || "Un usuario";
+
+            // Modificamos el texto y hacemos visible el letrero de la cabecera
+            if (contenedorAlertaCabecera) {
+                const toastUser = document.getElementById('toast-user');
+                if (toastUser) {
+                    toastUser.textContent = nombreAfectado;
+                }
+                contenedorAlertaCabecera.classList.remove('hidden');
+                contenedorAlertaCabecera.classList.add('animacion-parpadeo-alerta');
+            }
+        } else {
+            // No hay emergencias activas en este momento
+            if (contenedorAlertaCabecera) {
+                contenedorAlertaCabecera.classList.add('hidden');
+                contenedorAlertaCabecera.classList.remove('animacion-parpadeo-alerta');
+            }
+        }
+    }, (error) => {
+        console.error("Error al escuchar alertas SOS en tiempo real: ", error);
+    });
+}
+
 /* ==========================================
    0. INICIALIZACIÓN DEL MAPA GLOBAL
    ========================================== */
@@ -235,6 +378,7 @@ onAuthStateChanged(auth, (user) => {
         inicializarMapa();
         escucharRutas();
         activarEscuchaEmergenciasGlobal();
+        escucharAlertasSOS(); // Inicializar escuchador de alertas SOS en tiempo real
     } else {
         currentUser = null;
         if(unsubscribeChat) unsubscribeChat();

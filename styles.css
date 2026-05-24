@@ -622,3 +622,14 @@ body.tactical-mode {
     border-color: var(--primary);
     color: #FFFFFF;
 }
+
+/* Animación para que el letrero capte la atención del pelotón de inmediato */
+.animacion-parpadeo-alerta {
+    animation: parpadeoRojo 1.5s infinite;
+}
+
+@keyframes parpadeoRojo {
+    0% { background-color: #ff0000; }
+    50% { background-color: #b30000; }
+    100% { background-color: #ff0000; }
+}
