@@ -199,6 +199,27 @@ function notificarAlertaEnPantalla() {
 }
 
 // ==========================================
+// SISTEMA DE REPORTES VIALES (WAZE-STYLE)
+// ==========================================
+async function reportarIncidente(tipoIncidente) {
+    const usuario = auth.currentUser;
+    if (!usuario) return alert("Inicia sesión para reportar incidentes.");
+
+    try {
+        await addDoc(collection(db, "reportes"), {
+            tipo: tipoIncidente,
+            reportadoPor: sanitizarEntrada(usuario.displayName || "Usuario Anónimo"),
+            usuarioCorreo: usuario.email,
+            fechaHora: new Date().toISOString()
+        });
+        alert(`¡Reporte de "${tipoIncidente}" compartido con la red!`);
+    } catch (error) {
+        console.error("Error al enviar reporte vial:", error);
+        alert("No se pudo enviar el reporte. Intenta de nuevo.");
+    }
+}
+
+// ==========================================
 // ESCUCHADOR EN TIEMPO REAL DE ALERTAS SOS
 // ==========================================
 function escucharAlertasSOS() {
@@ -436,6 +457,11 @@ loginForm.addEventListener('submit', async (e) => {
 });
 
 logoutBtn.addEventListener('click', () => signOut(auth));
+
+// Event listeners para botones de reporte vial (Waze-Style)
+document.getElementById('btn-hueco')?.addEventListener('click', () => reportarIncidente('Hueco Crítico'));
+document.getElementById('btn-inundacion')?.addEventListener('click', () => reportarIncidente('Inundación'));
+document.getElementById('btn-sospechoso')?.addEventListener('click', () => reportarIncidente('Actividad Sospechosa'));
 
 // Interruptor de Modo Táctico (Negro Puro)
 const tacticalBtn = document.getElementById('tactical-mode-btn');
