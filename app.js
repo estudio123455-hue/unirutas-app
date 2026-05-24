@@ -74,6 +74,13 @@ let circuloPrecision = null;// Guarda el anillo difuminado de precisión del GPS
 // Variable para el marcador de salida programada
 let marcadorSalidaProgramada = null;
 
+// Variable global para rastrear en qué ruta está metido el usuario actualmente
+let idRutaActiva = null;
+
+// Variables para rastreo de compañeros en tiempo real
+let escuchadorCompañeros = null; // Almacena el unsubscribe de Firebase
+let marcadoresCompañeros = {};   // Guarda los pines de tus amigos en el mapa
+
 /* ==========================================
    0. INICIALIZACIÓN DEL MAPA GLOBAL
    ========================================== */
@@ -142,23 +149,20 @@ function activarUbicacionEnVivo() {
         return;
     }
 
-    // Configuración de alta fidelidad para el hardware móvil
     const opcionesGps = {
-        enableHighAccuracy: true, // Forzar uso de GPS satelital
-        maximumAge: 0,            // No usar posiciones guardadas en caché
-        timeout: 10000            // Tiempo máximo de espera de respuesta (10s)
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 10000
     };
 
-    // Comenzar a vigilar el movimiento del dispositivo de forma asíncrona
     idRastreoVivo = navigator.geolocation.watchPosition(
-        (position) => {
+        async (position) => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-            const precision = position.coords.accuracy; // Precisión en metros
+            const precision = position.coords.accuracy;
 
-            // Si es la primera vez que lee la ubicación, creamos los marcadores visuales
+            // 1. Renderizado Local en tu propio Mapa (Lo que ya hacíamos)
             if (!marcadorUsuario) {
-                // Anillo de precisión translúcido azul
                 circuloPrecision = L.circle([lat, lng], {
                     radius: precision,
                     color: '#3B82F6',
@@ -167,26 +171,41 @@ function activarUbicacionEnVivo() {
                     weight: 1
                 }).addTo(map);
 
-                // Pin central Premium de color azul neón parpadeante
                 marcadorUsuario = L.circleMarker([lat, lng], {
                     radius: 8,
                     color: '#FFFFFF',
                     weight: 2,
                     fillColor: '#3B82F6',
                     fillOpacity: 1
-                }).addTo(map).bindPopup("<b>Tú estás aquí</b><br>Ruta en curso.");
+                }).addTo(map).bindPopup("<b>Tú estás aquí</b>");
 
-                // Centrar la cámara la primera vez en la ubicación real del usuario en Bogotá
                 map.setView([lat, lng], 15);
             } else {
-                // Si el usuario ya se está moviendo por la avenida, actualizamos las posiciones suavemente
                 marcadorUsuario.setLatLng([lat, lng]);
                 circuloPrecision.setLatLng([lat, lng]);
                 circuloPrecision.setRadius(precision);
             }
+
+            // 2. TRANSMISIÓN INTERNACIONAL: Subir coordenadas a Firebase si estás en ruta
+            if (idRutaActiva && currentUser) {
+                try {
+                    // Guardamos la posición usando el UID del usuario como ID del documento
+                    // Esto evita duplicados y sobreescribe tu posición vieja con la actual
+                    const posicionRef = doc(db, "rutas", idRutaActiva, "posiciones_miembros", currentUser.uid);
+                    await setDoc(posicionRef, {
+                        nombre: currentUser.displayName || "Viajero Anónimo",
+                        email: currentUser.email,
+                        latitud: lat,
+                        longitud: lng,
+                        ultimaActualizacion: new Date().toISOString()
+                    });
+                } catch (error) {
+                    console.error("Error transmitiendo coordenadas a Firebase:", error);
+                }
+            }
         },
         (error) => {
-            console.warn("No se pudo sincronizar la ubicación en tiempo real:", error.message);
+            console.warn("Error de sincronización GPS:", error.message);
         },
         opcionesGps
     );
@@ -344,6 +363,58 @@ function ponerReporteEnMapa(lat, lng, tipo) {
     map.panTo([lat, lng]);
 }
 
+function comenzarEscuchaCompañeros(idRuta) {
+    // Si ya había una escucha activa de otra ruta, la cerramos
+    if (escuchadorCompañeros) escuchadorCompañeros();
+    
+    // Limpiar marcadores viejos del mapa si existían
+    Object.values(marcadoresCompañeros).forEach(m => map.removeLayer(m));
+    marcadoresCompañeros = {};
+
+    const posicionesRef = collection(db, "rutas", idRuta, "posiciones_miembros");
+    
+    // Escucha reactiva en tiempo real de la subcolección
+    escuchadorCompañeros = onSnapshot(posicionesRef, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            const uidCompañero = change.id;
+            const datos = change.doc.data();
+
+            // Evitar pintarte a ti mismo como un compañero
+            if (currentUser && uidCompañero === currentUser.uid) return;
+
+            if (change.type === "removed") {
+                // Si el usuario se sale de la ruta, lo borramos del mapa
+                if (marcadoresCompañeros[uidCompañero]) {
+                    map.removeLayer(marcadoresCompañeros[uidCompañero]);
+                    delete marcadoresCompañeros[uidCompañero];
+                }
+            } else {
+                // Si el usuario se mueve o se conecta nuevo
+                const latComp = datos.latitud;
+                const lngComp = datos.longitud;
+
+                if (marcadoresCompañeros[uidCompañero]) {
+                    // Si ya existía en el mapa, solo actualizamos su posición suavemente
+                    marcadoresCompañeros[uidCompañero].setLatLng([latComp, lngComp]);
+                } else {
+                    // Si es nuevo, creamos un pin naranja neón para diferenciarlo de ti
+                    const compañeroIcon = L.divIcon({
+                        className: 'companion-pin',
+                        html: `<div style="background: #EC4899; width: 20px; height: 20px; border-radius: 50%; border: 2px solid #FFF; box-shadow: 0 0 10px #EC4899;"></div>`,
+                        iconSize: [20, 20]
+                    });
+
+                    const nuevoMarcador = L.marker([latComp, lngComp], { icon: compañeroIcon })
+                        .addTo(map)
+                        .bindPopup(`<b>${datos.nombre}</b><br>¡En movimiento con el grupo!`);
+
+                    marcadoresCompañeros[uidCompañero] = nuevoMarcador;
+                }
+            }
+        });
+    });
+}
+
 /* ==========================================
    2. MOTOR DE FILTROS EN TIEMPO REAL (CLIENTE)
    ========================================== */
@@ -384,7 +455,7 @@ routeForm.addEventListener('submit', async (e) => {
     }
 
     try {
-        await addDoc(collection(db, "rutas"), {
+        const docRef = await addDoc(collection(db, "rutas"), {
             origen: origin,
             destino: destination,
             hora: time,
@@ -400,6 +471,10 @@ routeForm.addEventListener('submit', async (e) => {
             longitudSalida: lngSalida,
             fechaCreacion: new Date().toISOString()
         });
+
+        // Activar transmisión GPS y escucha de compañeros al crear la ruta
+        idRutaActiva = docRef.id;
+        comenzarEscuchaCompañeros(idRutaActiva);
 
         // Limpiar formulario y remover el pin temporal del mapa
         routeForm.reset();
@@ -520,6 +595,10 @@ function renderizarGrid(listaRutas) {
 async function unirseAPeloton(idRuta) {
     try {
         await updateDoc(doc(db, "rutas", idRuta), { miembros: arrayUnion(currentUser.email) });
+        
+        // Activar transmisión GPS y escucha de compañeros al unirse a la ruta
+        idRutaActiva = idRuta;
+        comenzarEscuchaCompañeros(idRutaActiva);
     } catch (error) { console.error(error); }
 }
 
