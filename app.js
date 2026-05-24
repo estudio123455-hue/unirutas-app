@@ -81,6 +81,10 @@ let idRutaActiva = null;
 let escuchadorCompañeros = null; // Almacena el unsubscribe de Firebase
 let marcadoresCompañeros = {};   // Guarda los pines de tus amigos en el mapa
 
+// Variables globales para poder apagar los escuchadores cuando el usuario cierra sesión
+let desuscribirSos = null;
+let desuscribirRutas = null;
+
 // El Escudo de UniRutas: Convierte HTML potencialmente peligroso en texto seguro
 function sanitizarEntrada(texto) {
     if (!texto) return '';
@@ -204,7 +208,7 @@ function escucharAlertasSOS() {
     const consultaSosActivos = query(coleccionEmergencias, where("estado", "==", "Activo"));
 
     // El listener en tiempo real se activa inmediatamente cuando hay cambios
-    onSnapshot(consultaSosActivos, (snapshot) => {
+    return onSnapshot(consultaSosActivos, (snapshot) => {
         const contenedorAlertaCabecera = document.getElementById('emergency-toast');
         
         if (!snapshot.empty) {
@@ -376,11 +380,23 @@ onAuthStateChanged(auth, (user) => {
         loginView.classList.add('hidden');
         dashboardView.classList.remove('hidden');
         inicializarMapa();
-        escucharRutas();
+        
+        // 🔥 SOLUCIÓN: Activamos las conexiones en vivo SOLO AHORA que ya estamos logueados
+        if (!desuscribirRutas) {
+            desuscribirRutas = escucharRutas();
+        }
+        if (!desuscribirSos) {
+            desuscribirSos = escucharAlertasSOS();
+        }
+        
         activarEscuchaEmergenciasGlobal();
-        escucharAlertasSOS(); // Inicializar escuchador de alertas SOS en tiempo real
     } else {
         currentUser = null;
+        
+        // Si el usuario cierra sesión, apagamos los escuchadores para que no tiren error de permisos
+        if (desuscribirRutas) { desuscribirRutas(); desuscribirRutas = null; }
+        if (desuscribirSos) { desuscribirSos(); desuscribirSos = null; }
+        
         if(unsubscribeChat) unsubscribeChat();
         if(unsubscribeEmergency) unsubscribeEmergency();
         dashboardView.classList.add('hidden');
@@ -654,7 +670,7 @@ routeForm.addEventListener('submit', async (e) => {
 function escucharRutas() {
     const q = query(collection(db, "rutas"), where("estado", "!=", "finalizado"), orderBy("estado", "desc"));
     
-    onSnapshot(q, (snapshot) => {
+    return onSnapshot(q, (snapshot) => {
         cachedRoutes = [];
         snapshot.forEach((docSnap) => {
             cachedRoutes.push({ id: docSnap.id, ...docSnap.data() });
